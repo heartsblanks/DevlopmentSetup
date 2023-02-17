@@ -1,35 +1,32 @@
 import tkinter as tk
 from tkinter import ttk
 
+
 class ProgressBar:
-    def __init__(self, master, title, progress_title, progress_var):
+    def __init__(self, master, max_value, message, size="400x75"):
         self.master = master
-        self.title = title
-        self.progress_title = progress_title
-        self.progress_var = progress_var
+        self.max_value = max_value
+        self.message = message
 
-        self.create_window()
+        self.top_level = tk.Toplevel(master)
+        self.top_level.title("Installation Progress")
+        self.top_level.geometry(size)
+        self.top_level.protocol("WM_DELETE_WINDOW", self.disable_close_button)
 
-    def create_window(self):
-        # Create window
-        self.window = tk.Toplevel(self.master)
-        self.window.title(self.title)
-        self.window.geometry("300x100")
+        self.label = ttk.Label(self.top_level, text=self.message)
+        self.label.pack(pady=10)
 
-        # Create progress bar
-        self.progress_label = ttk.Label(self.window, text=self.progress_title)
-        self.progress_bar = ttk.Progressbar(self.window, variable=self.progress_var, maximum=100)
-        self.progress_label.pack(pady=10)
-        self.progress_bar.pack(pady=5)
+        self.progress = ttk.Progressbar(self.top_level, orient="horizontal", length=350, mode="determinate", maximum=self.max_value)
+        self.progress.pack()
 
-    def start(self):
-        self.window.grab_set()
-        self.progress_var.set(0)
+        self.top_level.grab_set()
 
-    def update(self, progress):
-        self.progress_var.set(progress)
-        self.window.update()
+    def disable_close_button(self):
+        pass
 
-    def end(self):
-        self.progress_var.set(100)
-        self.window.after(500, self.window.destroy)
+    def update(self, current_value):
+        self.progress["value"] = current_value
+        self.progress.update()
+
+    def destroy(self):
+        self.top_level.destroy()
