@@ -17,24 +17,8 @@ class SystemSetupOptions:
         self.system_options_window.withdraw()
 
         # Create new top level window
-        self.setup_options_window = tk.Toplevel(self.master)
-        self.setup_options_window.title(f"{self.install_type} Setup Options")
-
-        # Create submit button
-        submit_button = ttk.Button(self.setup_options_window, text="Submit", command=self.submit_options, style="SystemButton.TButton")
-        submit_button.pack(pady=10)
-
-        # Create quit button
-        quit_button = ttk.Button(self.setup_options_window, text="Quit", command=self.quit_options, style="SystemButton.TButton")
-        quit_button.pack(pady=10)
-
-        # Create options
-        self.create_options()
-
-    def create_options(self):
-        # Create new top level window
         self.system_setup_options_window = tk.Toplevel(self.master)
-        self.system_setup_options_window.title(f"{system_type} {install_type} Setup")
+        self.system_setup_options_window.title(f"{self.install_type} Setup Options")
 
         # Set up custom styles for this window
         self.setup_system_setup_options_styles()
@@ -43,16 +27,16 @@ class SystemSetupOptions:
         self.installation_type_var = self.create_label_and_options("Unattended installation", ["Yes", "No"])
         self.repo_update_var = self.create_label_and_options("Repository", ["Update", "Replace"])
         self.hb_password_entry = self.create_label_and_entry("HB Password")
-        if install_type in ["IIB10", "ACE12"]:
+        if self.install_type in ["IIB10", "ACE12"]:
             self.ho_password_entry = self.create_label_and_entry("HO Password")
             self.auto_reboot_var = self.create_label_and_options("Reboot Automatically", ["Yes", "No"])
 
         # Create submit button
-        submit_button = ttk.Button(self.system_setup_options_window, text="Submit", command=lambda: self.submit_options, style="SubmitButton.TButton")
+        submit_button = ttk.Button(self.system_setup_options_window, text="Submit", command=self.submit_options, style="SubmitButton.TButton")
         submit_button.pack(pady=10)
 
         # Create quit button
-        quit_button = ttk.Button(self.system_setup_options_window, text="Quit", command=self.system_setup_options_window.destroy, style="QuitButton.TButton")
+        quit_button = ttk.Button(self.system_setup_options_window, text="Quit", command=self.quit_options, style="QuitButton.TButton")
         quit_button.pack(pady=10)
         self.system_options_window.destroy()
 
@@ -80,13 +64,13 @@ class SystemSetupOptions:
         entry = ttk.Entry(self.system_setup_options_window, show="*", style="Option.TEntry")
         entry.pack()
         return entry
+
     def quit_options(self):
-        self.setup_options_window.destroy()
+        self.system_setup_options_window.destroy()
         self.system_options_window.deiconify()
 
-
     def submit_options(self):
-        # get the values of the options
+    # get the values of the options
         installation_type = self.installation_type_var.get()
         repo_update = self.repo_update_var.get()
         hb_password = self.hb_password_entry.get()
@@ -98,6 +82,11 @@ class SystemSetupOptions:
             ho_password = None
             auto_reboot = None
 
-        # instantiate the Installation class
+    # instantiate the Installation class
         installation = Installation(self.system_type, self.install_type, self.options['systemPath'])
+    
+    # hide the current window and show the previous one
+        self.system_setup_options_window.destroy()
+        self.system_options_window.deiconify()
 
+    
