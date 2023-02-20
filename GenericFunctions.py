@@ -1,19 +1,24 @@
+import logging
+import os
+
 class GenericFunctions:
-    def replace_strings_in_file(self, file_path, replacements):
+    @staticmethod
+    def replace_strings_in_file(file_path, replacements):
+        logger = logging.getLogger(__name__)
+        if not os.path.isfile(file_path):
+            logger.error(f"File {file_path} does not exist.")
+            return
         try:
-            with open(file_path, 'r') as file:
-                file_data = file.read()
-
-            # Replace the target strings with their corresponding values
-            for target, value in replacements.items():
-                file_data = file_data.replace(target, value)
-
-            with open(file_path, 'w') as file:
-                file.write(file_data)
-
+            with open(file_path, "r") as f:
+                file_content = f.read()
+            for old_string, new_string in replacements.items():
+                file_content = file_content.replace(old_string, new_string)
+                logger.info(f"Replaced '{old_string}' with '{new_string}' in file {file_path}.")
+            with open(file_path, "w") as f:
+                f.write(file_content)
         except Exception as e:
-            logger.error(f"Error while replacing strings in file {file_path}: {str(e)}")
-            raise e
+            logger.error(f"Error replacing strings in file {file_path}: {str(e)}")
+
 
             
 #gf = GenericFunctions()
