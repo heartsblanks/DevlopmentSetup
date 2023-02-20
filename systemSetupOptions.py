@@ -80,6 +80,10 @@ class SystemSetupOptions:
         entry = ttk.Entry(self.system_setup_options_window, show="*", style="Option.TEntry")
         entry.pack()
         return entry
+    def quit_options(self):
+        self.setup_options_window.destroy()
+        self.system_options_window.deiconify()
+
 
     def submit_options(self):
         # get the values of the options
