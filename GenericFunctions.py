@@ -1,5 +1,7 @@
 import logging
 import os
+import paramiko
+import subprocess
 
 class GenericFunctions:
     @staticmethod
@@ -19,7 +21,8 @@ class GenericFunctions:
         except Exception as e:
             logger.error(f"Error replacing strings in file {file_path}: {str(e)}")
 
-    def get_developer_ports(self, ssh_host, ssh_port, ssh_username, ssh_password):
+    @staticmethod
+    def get_developer_ports(ssh_host, ssh_port, ssh_username, ssh_password):
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(ssh_host, port=ssh_port, username=ssh_username, password=ssh_password)
@@ -27,25 +30,33 @@ class GenericFunctions:
         try:
             stdin, stdout, stderr = ssh.exec_command("mqsilist -v")
             output = stdout.read().decode("utf-8")
-            self.HTTP_CONNECTOR = self.HTTPS_CONNECTOR = self.WEBADMINPORT_SSL = self.WEBADMINPORT = self.MQ_LISTENER_PORT = self.DEBUG_PORT = "Not Found"
+            HTTP_CONNECTOR = HTTPS_CONNECTOR = WEBADMINPORT_SSL = WEBADMINPORT = MQ_LISTENER_PORT = DEBUG_PORT = "Not Found"
             for line in output.splitlines():
                 if "HTTPConnector:" in line:
-                    self.HTTP_CONNECTOR = line.split(":")[1].strip()
+                    HTTP_CONNECTOR = line.split(":")[1].strip()
                 elif "HTTPSConnector:" in line:
-                    self.HTTPS_CONNECTOR = line.split(":")[1].strip()
+                    HTTPS_CONNECTOR = line.split(":")[1].strip()
                 elif "Webadminport (SSL):" in line:
-                    self.WEBADMINPORT_SSL = line.split(":")[1].strip()
+                    WEBADMINPORT_SSL = line.split(":")[1].strip()
                 elif "Webadminport:" in line:
-                    self.WEBADMINPORT = line.split(":")[1].strip()
+                    WEBADMINPORT = line.split(":")[1].strip()
                 elif "MQ-Listener Port:" in line:
-                    self.MQ_LISTENER_PORT = line.split(":")[1].strip()
+                    MQ_LISTENER_PORT = line.split(":")[1].strip()
                 elif "Debug Port:" in line:
-                    self.DEBUG_PORT = line.split(":")[1].strip()
+                    DEBUG_PORT = line.split(":")[1].strip()
         except Exception as e:
-            self.logger.error(f"Error getting developer ports via SSH: {str(e)}")
-            raise e
+            raise Exception(f"Error getting developer ports via SSH: {str(e)}")
         finally:
             ssh.close()
+        return HTTP_CONNECTOR, HTTPS_CONNECTOR, WEBADMINPORT_SSL, WEBADMINPORT, MQ_LISTENER_PORT, DEBUG_PORT
+
+    @staticmethod
+    def reload_maven_repo(workspace_dir, maven_cmd):
+        for root, dirs, files in os.walk(workspace_dir):
+            if "pom.xml" in files:
+                logging.info(f"Downloading dependencies for {os.path.join(root, 'pom.xml')} using {maven_cmd}")
+                subprocess.run(f"{maven_cmd} -f {os.path.join(root, 'pom.xml')} dependency:resolve", shell=True, check=True)
+
             
 #gf = GenericFunctions()
 #replacements = {
