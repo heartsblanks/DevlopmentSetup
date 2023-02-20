@@ -5,12 +5,11 @@ from PluginInstaller import PluginInstaller
 from CheckConnections import CheckConnections
 from CreateVariables import CreateVariables
 
-
 class Installation:
-    def __init__(self, system_type, install_type, system_path):
+    def __init__(self, system_type, install_type):
         self.system_type = system_type
         self.install_type = install_type
-        self.system_path = system_path
+
         self.logger = logging.getLogger(__name__)
         self.checkout_projects = CheckOutProjects(self.install_type, self.logger)
         self.plugin_installer = PluginInstaller(self.install_type, self.logger)
