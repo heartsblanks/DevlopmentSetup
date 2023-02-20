@@ -75,24 +75,7 @@ class WorkspaceUtils:
             messagebox.showerror("Error", f"{self.install_type} workspace not found at the provided location.")
             self.logger.error(f"{self.install_type} workspace not found at {workspace_path}.")
 
-def setWorkspacePathVariable(self):
-    if self.workspace_path:
-        os.environ["WORKSPACE"] = self.workspace_path
-        self.logger.info(f"WORKSPACE environment variable set to {self.workspace_path}.")
-    else:
-        self.logger.error("Workspace path has not been set.")
 
-def createFolders(self):
-    folders_to_create = [
-        f"{self.workspace_path}/Project",
-        f"{self.workspace_path}/Logs",
-        f"{self.workspace_path}/Database"
-    ]
-    for folder in folders_to_create:
-        os.makedirs(folder, exist_ok=True)
-        self.logger.info(f"Folder {folder} has been created.")
 
 def run(self):
     self.checkWorkspaceDirectory()
-    self.setWorkspacePathVariable()
-    self.createFolders()
