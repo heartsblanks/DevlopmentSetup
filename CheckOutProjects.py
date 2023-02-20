@@ -1,30 +1,49 @@
+
 import os
+import subprocess
 import logging
-import git
 
 
 class CheckOutProjects:
-    def __init__(self, git_url, destination_path):
-        self.git_url = git_url
-        self.destination_path = destination_path
-        self.logger = logging.getLogger(__name__)
+    def __init__(self, log_file="checkout.log"):
+        self.log_file = log_file
 
-    def clone_repo(self):
+    def checkout_projects(self, system_type):
+        logging.basicConfig(filename=self.log_file, level=logging.DEBUG)
+
         try:
-            if not os.path.exists(self.destination_path):
-                os.makedirs(self.destination_path, exist_ok=True)
+            logging.info(f"Starting checkout process for {system_type} projects")
 
-            git.Repo.clone_from(self.git_url, self.destination_path)
-            self.logger.info(f"Repository cloned from {self.git_url} to {self.destination_path}.")
-        except git.exc.GitCommandError as e:
-            self.logger.error(f"Error while cloning repository from {self.git_url} to {self.destination_path}: {str(e)}")
-            raise e
+            if system_type == "EAI":
+                self.checkout_cvs_project("EAI")
+            else:
+                self.checkout_git_project("DS")
 
-    def pull_repo(self):
+            logging.info(f"Finished checkout process for {system_type} projects")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Error checking out projects: {e}")
+            raise CheckoutError(str(e))
+
+    def checkout_cvs_project(self, project_name):
+        logging.info(f"Checking out {project_name} project from CVS")
+
         try:
-            repo = git.Repo(self.destination_path)
-            repo.git.pull()
-            self.logger.info(f"Repository at {self.destination_path} has been pulled successfully.")
-        except git.exc.GitCommandError as e:
-            self.logger.error(f"Error while pulling repository at {self.destination_path}: {str(e)}")
-            raise e
+            cmd = f"cvs checkout {project_name}"
+            subprocess.check_output(cmd, shell=True)
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Error checking out {project_name} project: {e}")
+            raise CheckoutError(str(e))
+
+    def checkout_git_project(self, project_name):
+        logging.info(f"Checking out {project_name} project from GIT")
+
+        try:
+            cmd = f"git clone git@github.com:myorg/{project_name}.git"
+            subprocess.check_output(cmd, shell=True)
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Error checking out {project_name} project: {e}")
+            raise CheckoutError(str(e))
+
+
+class CheckoutError(Exception):
+    pass
