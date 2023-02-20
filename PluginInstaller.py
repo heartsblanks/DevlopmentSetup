@@ -3,6 +3,8 @@ import shutil
 import urllib.request
 import zipfile
 import logging
+from GenericFunctions import replace_strings_in_file
+
 
 # Local file paths for plugin installation
 IIB_TOOLKIT_PLUGIN_PATH = r"C:\temp\iib_toolkit_plugin.zip"
@@ -56,11 +58,47 @@ class PluginInstaller:
             logger.exception("Failed to install JRE.")
 
     def install_maven_plugin(self):
+        # Create directories for M2_DIR and M2_USERDIR
         try:
-            urllib.request.urlretrieve(MAVEN_CLI_URL, "maven-frontend-plugin.jar")
-            shutil.move("maven-frontend-plugin.jar", os.path.join(os.environ["MAVEN_HOME"], "lib", "ext"))
-        except:
-            logger.exception("Failed to install Maven plugin.")
+            m2_dir = os.environ["M2_DIR"]
+            m2_user_dir = os.environ["M2_USERDIR"]
+            os.makedirs(m2_dir, exist_ok=True)
+            os.makedirs(m2_user_dir, exist_ok=True)
+        except Exception as e:
+            logger.exception("Failed to create directories for M2_DIR and M2_USERDIR.")
+            raise e
+
+        # Copy files to M2_DIR and M2_USERDIR
+        try:
+            # Copy settings.xml and settings-security.xml from Maven Plugin directory to M2_DIR
+            src_dir = os.path.join(os.getcwd(), "MavenPlugin")
+            dst_dir = m2_dir
+            shutil.copy(os.path.join(src_dir, "settings.xml"), dst_dir)
+            shutil.copy(os.path.join(src_dir, "settings-security.xml"), dst_dir)
+
+            # Copy settings-security.xml from Maven Plugin/Security Relocation directory to M2_USERDIR
+            src_dir = os.path.join(src_dir, "Security Relocation")
+            dst_dir = m2_user_dir
+            shutil.copy(os.path.join(src_dir, "settings-security.xml"), dst_dir)
+        except Exception as e:
+            logger.exception("Failed to copy files to M2_DIR and M2_USERDIR.")
+            raise e
+
+        # Replace strings in files
+        try:
+            settings_xml_file = os.path.join(m2_dir, "settings.xml")
+            settings_security_xml_file = os.path.join(m2_dir, "settings-security.xml")
+            values_to_replace = {"<localRepository>${M2_REPO}</localRepository>": f"<localRepository>{os.environ['M2_REPO']}</localRepository>"}
+            replace_strings_in_file(settings_xml_file, values_to_replace)
+            logger.info(f"Replaced values in {settings_xml_file}: {values_to_replace}")
+
+            values_to_replace = {"<master>{*AES*}REPLACEME{*AES*}</master>": f"<master>{os.environ['NEXUS_USER_PASS']}</master>"}
+            replace_strings_in_file(settings_security_xml_file, values_to_replace)
+            logger.info(f"Replaced values in {settings_security_xml_file}: {values_to_replace}")
+        except Exception as e:
+            logger.exception("Failed to replace strings in settings.xml and settings-security.xml.")
+            raise e
+
 
     def install_plugin_from_zip(self, plugin_path, plugin_name):
         plugin_dir = os.environ.get("ECLIPSE_HOME")
