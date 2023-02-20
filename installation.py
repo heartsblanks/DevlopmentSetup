@@ -1,30 +1,60 @@
 import logging
-from tkinter import messagebox
-from CheckOutProjects import CheckOutProjects
+import os
+import sys
+
+from WorkspaceFunctions import WorkspaceUtils
+from createVariables import CreateVariables
+from checkConnections import CheckConnections
 from PluginInstaller import PluginInstaller
-from CheckConnections import CheckConnections
-from CreateVariables import CreateVariables
+from CheckOutProjects import CheckOutProjects
+from configureToolkit import ToolkitConfigurator
+from createProperties import CreateProperties
+from progressBar import ProgressBar
 
 
 class Installation:
-    def __init__(self, system_type, install_type):
-        self.system_type = system_type
+    def __init__(self, install_type):
         self.install_type = install_type
         self.logger = logging.getLogger(__name__)
-        self.checkout_projects = CheckOutProjects(self.install_type, self.logger)
-        self.plugin_installer = PluginInstaller(self.install_type, self.logger)
-        self.check_connections = CheckConnections(self.logger)
-        self.create_variables = CreateVariables(self.system_type)
-        self.orchestrate_installation()
+        self.progress_bar = ProgressBar(None, 7, "Installing")
 
-    def orchestrate_installation(self):
+    def run(self):
         try:
-            self.checkout_projects.run()
-            self.plugin_installer.run()
-            self.check_connections.run()
-            self.create_variables.create()
-            messagebox.showinfo("Installation Complete", f"{self.install_type} installation complete.")
-            self.logger.info(f"{self.install_type} installation complete.")
+            self.progress_bar.top_level.deiconify()
+            self.installation_steps()
+            self.logger.info("Installation completed successfully!")
+            self.progress_bar.destroy()
+            sys.exit(0)
         except Exception as e:
-            self.logger.exception("An error occurred during installation")
-            messagebox.showerror("Installation Error", f"An error occurred during {self.install_type} installation. Error message: {str(e)}")
+            self.logger.error("Installation failed. See log for details.")
+            self.logger.exception(str(e))
+            self.progress_bar.destroy()
+            sys.exit(1)
+
+    def installation_steps(self):
+        try:
+            workspace = WorkspaceUtils(self.install_type)
+            create_vars = CreateVariables(self.install_type)
+            check_conns = CheckConnections(create_vars)
+            plugin_installer = PluginInstaller(self.install_type, create_vars, check_conns)
+            checkout_projects = CheckOutProjects(self.install_type, create_vars, check_conns)
+            toolkit_config = ToolkitConfigurator(self.install_type, create_vars, check_conns)
+            create_props = CreateProperties(self.install_type)
+
+            workspace.check_workspace_directory()
+            self.progress_bar.update(1)
+            create_vars.create()
+            self.progress_bar.update(2)
+            check_conns.check_all_connections()
+            self.progress_bar.update(3)
+            plugin_installer.install_plugins()
+            self.progress_bar.update(4)
+            checkout_projects.checkout_all_projects()
+            self.progress_bar.update(5)
+            toolkit_config.configure_toolkit()
+            self.progress_bar.update(6)
+            create_props.create()
+            self.progress_bar.update(7)
+        except Exception as e:
+            self.logger.exception("Error during installation steps")
+            raise e
