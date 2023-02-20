@@ -83,7 +83,7 @@ class SystemSetupOptions:
             auto_reboot = None
 
     # instantiate the Installation class
-        installation = Installation(self.system_type, self.install_type, self.options['systemPath'])
+        installation = Installation(self.system_type, self.install_type)
     
     # hide the current window and show the previous one
         self.system_setup_options_window.destroy()
