@@ -15,8 +15,12 @@ class PluginInstaller:
     def install_eclipse_plugin(self, repository, package, directory):
         command = f"{directory}\\eclipsec.exe -nosplash -application org.eclipse.equinox.p2.director -repository {repository} -installIU {package}"
         self.logger.info(f"Running command: {command}")
-        os.system(command)
-        self.logger.info(f"Finished installing Eclipse plugin {package}.")
+        try:
+            os.system(command)
+            self.logger.info(f"Finished installing Eclipse plugin {package}.")
+        except Exception as e:
+            self.logger.error(f"Error installing Eclipse plugin {package}: {str(e)}")
+            raise e
 
     def install_maven_plugin(self):
         logger = logging.getLogger(__name__)
@@ -32,11 +36,20 @@ class PluginInstaller:
 
         for directory in directories:
             if not os.path.exists(directory):
-                os.makedirs(directory)
-                logger.info(f"Created directory: {directory}")
+                try:
+                    os.makedirs(directory)
+                    logger.info(f"Created directory: {directory}")
+                except Exception as e:
+                    logger.error(f"Error creating directory {directory}: {str(e)}")
+                    raise e
+
         for source, target in files:
-            shutil.copy(source, target)
-            logger.info(f"Copied {source} to {target}.")
+            try:
+                shutil.copy(source, target)
+                logger.info(f"Copied {source} to {target}.")
+            except Exception as e:
+                logger.error(f"Error copying {source} to {target}: {str(e)}")
+                raise e
         
         # Replace strings in files
         try:
@@ -50,5 +63,5 @@ class PluginInstaller:
             GenericFunctions.replace_strings_in_file(settings_security_xml_file, values_to_replace)
             logger.info(f"Replaced values in {settings_security_xml_file}: {values_to_replace}")
         except Exception as e:
-            logger.exception("Failed to replace strings in settings.xml and settings-security.xml.")
+            logger.error("Failed to replace strings in settings.xml and settings-security.xml.")
             raise e
