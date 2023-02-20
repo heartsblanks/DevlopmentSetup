@@ -30,11 +30,15 @@ class ConfigureToolkit:
 
     def configure_toolkit(self):
         logging.basicConfig(filename=self.log_file, level=logging.DEBUG)
-        self.copy_files()
-        self.replace_dev_broker()
-        self.replace_test_broker()
-        GenericFunctions.replace_strings_in_file(self.version_file, {"IIBTK_VERSION=": f"IIBTK_VERSION={self.get_iib_version()}"})
-        self.logger.info("Finished configuring IIB Toolkit.")
+        try:
+            self.copy_files()
+            self.replace_dev_broker()
+            self.replace_test_broker()
+            GenericFunctions.replace_strings_in_file(self.version_file, {"IIBTK_VERSION=": f"IIBTK_VERSION={self.get_iib_version()}"})
+            self.logger.info("Finished configuring IIB Toolkit.")
+        except Exception as e:
+            self.logger.exception(f"Error configuring IIB Toolkit: {str(e)}")
+            raise e
     
     def copy_files(self):
         source_target_list = [
@@ -58,21 +62,65 @@ class ConfigureToolkit:
             source = os.path.join(self.settings_source_dir, settings_file)
             target = os.path.join(self.iib_base_path, "ToolkitSettings", "org.eclipse.core.runtime", settings_file)
             shutil.copy(source, target)
-            self.logger.info(f"Copied {source} to {target}.")
-    
-        shutil.copy(self.dev_broker_file, self.plugins_dir)
-        self.logger.info(f"Copied {self.dev_broker_file} to {self.plugins_dir}.")
-        GenericFunctions.replace_strings_in_file(self.plugins_dir + "/DEV.broker", {
-        "NODE": self.node,
-        "LISTEN_PORT": str(self.WEBADMINPORT_SSL),
-        "User": os.getenv("USER_ID")
-        })
-        self.logger.info("Replaced variables in DEV.broker.")
+            self.logger.info
+    def copy_files(self):
+        source_target_list = [
+            (self.version_file, os.path.join(self.metadata_dir, "version.ini")),
+            (self.lock_file, os.path.join(self.metadata_dir, ".lock")),
+            (self.cvs_settings_file, self.cvs_settings_file),
+            (self.jdt_settings_file, self.jdt_settings_file),
+            (self.mssql_driver_source, self.mssql_driver_target),
+        ]
+        for source, target in source_target_list:
+            try:
+                shutil.copy(source, target)
+                self.logger.info(f"Copied {source} to {target}.")
+            except Exception as e:
+                self.logger.error(f"Failed to copy {source} to {target}: {e}")
+                raise e
 
-        shutil.copy(self.test_broker_file, self.plugins_dir)
-        self.logger.info(f"Copied {self.test_broker_file} to {self.plugins_dir}.")
-        GenericFunctions.replace_strings_in_file(self.plugins_dir + "/TEST.broker", {
-        "User": os.getenv("USER_ID")
-    })
-    self.logger.info("Replaced variables in TEST.broker.")
+        for plugin_file in os.listdir(self.plugins_source_dir):
+            source = os.path.join(self.plugins_source_dir, plugin_file)
+            target = os.path.join(self.plugins_dir, plugin_file)
+            try:
+                shutil.copy(source, target)
+                self.logger.info(f"Copied {source} to {target}.")
+            except Exception as e:
+                self.logger.error(f"Failed to copy {source} to {target}: {e}")
+                raise e
+
+        for settings_file in os.listdir(self.settings_source_dir):
+            source = os.path.join(self.settings_source_dir, settings_file)
+            target = os.path.join(self.iib_base_path, "ToolkitSettings", "org.eclipse.core.runtime", settings_file)
+            try:
+                shutil.copy(source, target)
+                self.logger.info(f"Copied {source} to {target}.")
+            except Exception as e:
+                self.logger.error(f"Failed to copy {source} to {target}: {e}")
+                raise e
+
+        try:
+            shutil.copy(self.dev_broker_file, self.plugins_dir)
+            self.logger.info(f"Copied {self.dev_broker_file} to {self.plugins_dir}.")
+            GenericFunctions.replace_strings_in_file(self.plugins_dir + "/DEV.broker", {
+            "NODE": self.node,
+            "LISTEN_PORT": str(self.WEBADMINPORT_SSL),
+            "User": os.getenv("USER_ID")
+            })
+            self.logger.info("Replaced variables in DEV.broker.")
+        except Exception as e:
+            self.logger.error(f"Failed to copy {self.dev_broker_file} to {self.plugins_dir} or replace variables in DEV.broker: {e}")
+            raise e
+
+        try:
+            shutil.copy(self.test_broker_file, self.plugins_dir)
+            self.logger.info(f"Copied {self.test_broker_file} to {self.plugins_dir}.")
+            GenericFunctions.replace_strings_in_file(self.plugins_dir + "/TEST.broker", {
+            "User": os.getenv("USER_ID")
+            })
+            self.logger.info("Replaced variables in TEST.broker.")
+        except Exception as e:
+            self.logger.error(f"Failed to copy {self.test_broker_file} to {self.plugins_dir} or replace variables in TEST.broker: {e}")
+            raise e
+
 
