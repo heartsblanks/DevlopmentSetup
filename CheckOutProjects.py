@@ -1,8 +1,3 @@
-import os
-import subprocess
-import logging
-
-
 class CheckOutProjects:
     def __init__(self, update_type, workspace_dir, log_file="checkout.log"):
         self.update_type = update_type
@@ -16,12 +11,16 @@ class CheckOutProjects:
             logging.info(f"Starting checkout process for projects")
 
             for project in project_list:
-                if "name" in project and "tags" in project:
+                if "name" in project:
                     project_name = project["name"]
-                    tags = project["tags"]
                     folder_name = project.get("folder_name", project_name)
-                    self.checkout_cvs_project(project_name, folder_name, tags.get("cvs"))
-                    self.checkout_git_project(project_name, folder_name, tags.get("git"))
+                    
+                    if "tags" in project:
+                        tags = project["tags"]
+                        self.checkout_cvs_project(project_name, folder_name, tags.get("cvs"))
+                        self.checkout_git_project(project_name, folder_name, tags.get("git"))
+                    else:
+                        self.checkout_latest_project(project_name, folder_name)
                 else:
                     raise ValueError("Invalid project parameters")
 
@@ -30,31 +29,33 @@ class CheckOutProjects:
             logging.error(f"Error checking out projects: {e}")
             raise CheckoutError(str(e))
 
-  def checkout_cvs_project(self, project_name, folder_name, tag):
-        logging.info(f"Checking out {project_name} project from CVS with tag {tag}")
+    def checkout_cvs_project(self, project_name, folder_name, tag):
+        if tag is not None:
+            logging.info(f"Checking out {project_name} project from CVS with tag {tag}")
 
-        try:
-            cmd = f"cvs {self.update_type} {tag} {project_name}"
-            cwd = os.path.join(self.workspace_dir, folder_name)
-            subprocess.check_output(cmd, shell=True, cwd=cwd)
-        except subprocess.CalledProcessError as e:
-            logging.error(f"Error checking out {project_name} project: {e}")
-            raise CheckoutError(str(e))
+            try:
+                cmd = f"cvs {self.update_type} {tag} {project_name}"
+                cwd = os.path.join(self.workspace_dir, folder_name)
+                subprocess.check_output(cmd, shell=True, cwd=cwd)
+            except subprocess.CalledProcessError as e:
+                logging.error(f"Error checking out {project_name} project: {e}")
+                raise CheckoutError(str(e))
 
     def checkout_git_project(self, project_name, folder_name, tag):
-    logging.info(f"Checking out {project_name} project from GIT with tag {tag}")
+        if tag is not None:
+            logging.info(f"Checking out {project_name} project from GIT with tag {tag}")
 
-    try:
-        if self.update_type == "clone":
-            cmd = f"git clone https://github.com/username/{project_name}.git . && git checkout {tag}"
-        else:
-            cmd = f"git {self.update_type} && git checkout {tag}"
+            try:
+                if self.update_type == "clone":
+                    cmd = f"git clone https://github.com/username/{project_name}.git . && git checkout {tag}"
+                else:
+                    cmd = f"git {self.update_type} && git checkout {tag}"
 
-        cwd = os.path.join(self.workspace_dir, folder_name)
-        subprocess.check_output(cmd, shell=True, cwd=cwd)
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Error checking out {project_name} project: {e}")
-        raise CheckoutError(str(e))
+                cwd = os.path.join(self.workspace_dir, folder_name)
+                subprocess.check_output(cmd, shell=True, cwd=cwd)
+            except subprocess.CalledProcessError as e:
+                logging.error(f"Error checking out {project_name} project: {e}")
+                raise CheckoutError(str(e))
 
     def checkout_latest_project(self, project_name, folder_name):
         logging.info(f"Checking out {project_name} project with the latest version")
@@ -66,7 +67,6 @@ class CheckOutProjects:
         except subprocess.CalledProcessError as e:
             logging.error(f"Error checking out {project_name} project: {e}")
             raise CheckoutError(str(e))
-
 
 class CheckoutError(Exception):
     def __init__(self, message):
