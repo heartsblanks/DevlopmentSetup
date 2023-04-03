@@ -31,18 +31,12 @@ class CheckOutProjects:
             logging.info(f"Starting checkout process for projects")
 
             for project in project_list:
-                if "name" in project and "folder_name" in project:
+                if "name" in project and "tags" in project:
                     project_name = project["name"]
-                    folder_name = project["folder_name"]
-                    
-                    if "cvs" in project.get("tags", {}):
-                        tag = project["tags"]["cvs"]
-                        self.checkout_cvs_project(project_name, folder_name, tag)
-                    elif "git" in project.get("tags", {}):
-                        tag = project["tags"]["git"]
-                        self.checkout_git_project(project_name, folder_name, tag)
-                    else:
-                        self.checkout_latest_project(project_name, folder_name)
+                    tags = project["tags"]
+                    folder_name = project.get("folder_name", project_name)
+                    self.checkout_cvs_project(project_name, folder_name, tags.get("cvs"))
+                    self.checkout_git_project(project_name, folder_name, tags.get("git"))
                 else:
                     raise ValueError("Invalid project parameters")
 
@@ -51,7 +45,7 @@ class CheckOutProjects:
             logging.error(f"Error checking out projects: {e}")
             raise CheckoutError(str(e))
 
-    def checkout_cvs_project(self, project_name, folder_name, tag):
+  def checkout_cvs_project(self, project_name, folder_name, tag):
         logging.info(f"Checking out {project_name} project from CVS with tag {tag}")
 
         try:
