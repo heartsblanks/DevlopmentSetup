@@ -72,8 +72,7 @@ class CheckOutProjects:
             raise CheckoutError(str(e))
 
 
-class CheckoutError(Exception):
-    pass
+
 
 class CheckoutError(Exception):
     def __init__(self, message):
