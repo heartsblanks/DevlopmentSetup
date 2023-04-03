@@ -17,9 +17,9 @@ class CheckOutProjects:
             logging.info(f"Starting checkout process for projects")
 
             for project in project_list:
-                if "name" in project and "tag" in project:
+                if "name" in project:
                     project_name = project["name"]
-                    tag = project["tag"]
+                    tag = project.get("tag")
                     folder_name = project.get("folder_name", project_name)
 
                     if self.repo.lower() == "git":
@@ -36,10 +36,13 @@ class CheckOutProjects:
             logging.error(f"Error checking out projects: {e}")
             raise CheckoutError(str(e))
 
-    def checkout_cvs_project(self, project_name, folder_name, tag):
+    def checkout_cvs_project(self, project_name, folder_name, tag=None):
         logging.info(f"Checking out {project_name} project from CVS with tag {tag}")
 
         try:
+            if tag is None:
+                tag = "HEAD"
+
             cmd = f"cvs {self.update_type} {tag} {project_name}"
             cwd = os.path.join(self.workspace_dir, folder_name)
             subprocess.check_output(cmd, shell=True, cwd=cwd)
@@ -47,14 +50,20 @@ class CheckOutProjects:
             logging.error(f"Error checking out {project_name} project: {e}")
             raise CheckoutError(str(e))
 
-    def checkout_git_project(self, project_name, folder_name, tag):
+    def checkout_git_project(self, project_name, folder_name, tag=None):
         logging.info(f"Checking out {project_name} project from GIT with tag {tag}")
 
         try:
-            if self.update_type == "clone":
-                cmd = f"git clone https://github.com/username/{project_name}.git . && git checkout {tag}"
+            if tag is None:
+                if self.update_type == "clone":
+                    cmd = f"git clone https://github.com/username/{project_name}.git ."
+                else:
+                    cmd = "git pull"
             else:
-                cmd = f"git {self.update_type} && git checkout {tag}"
+                if self.update_type == "clone":
+                    cmd = f"git clone https://github.com/username/{project_name}.git . && git checkout {tag}"
+                else:
+                    cmd = f"git {self.update_type} && git checkout {tag}"
 
             cwd = os.path.join(self.workspace_dir, folder_name)
             subprocess.check_output(cmd, shell=True, cwd=cwd)
@@ -63,6 +72,8 @@ class CheckOutProjects:
             raise CheckoutError(str(e))
 
 
+class CheckoutError(Exception):
+    pass
 
 class CheckoutError(Exception):
     def __init__(self, message):
