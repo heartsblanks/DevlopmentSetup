@@ -63,16 +63,20 @@ class CheckOutProjects:
             raise CheckoutError(str(e))
 
     def checkout_git_project(self, project_name, folder_name, tag):
-        logging.info(f"Checking out {project_name} project from GIT with tag {tag}")
+    logging.info(f"Checking out {project_name} project from GIT with tag {tag}")
 
-        try:
+    try:
+        if self.update_type == "clone":
+            cmd = f"git clone https://github.com/username/{project_name}.git . && git checkout {tag}"
+        else:
             cmd = f"git {self.update_type} && git checkout {tag}"
-            cwd = os.path.join(self.workspace_dir, folder_name)
-            subprocess.check_output(cmd, shell=True, cwd=cwd)
-        except subprocess.CalledProcessError as e:
-            logging.error(f"Error checking out {project_name} project: {e}")
-            raise CheckoutError(str(e))
-    
+
+        cwd = os.path.join(self.workspace_dir, folder_name)
+        subprocess.check_output(cmd, shell=True, cwd=cwd)
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error checking out {project_name} project: {e}")
+        raise CheckoutError(str(e))
+
     def checkout_latest_project(self, project_name, folder_name):
         logging.info(f"Checking out {project_name} project with the latest version")
         
