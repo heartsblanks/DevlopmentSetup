@@ -1,18 +1,3 @@
-from original_file import CheckOutProjects, CheckoutError
-
-update_type = "-q"  # Example value for update_type
-workspace_dir = "/path/to/workspace"  # Example value for workspace_dir
-log_file = "checkout.log"  # Example value for log_file
-
-project1 = {"name": "project1", "tags": {"cvs": "tag1", "git": "tag2"}, "folder_name": "project1_folder"}
-project2 = {"name": "project2", "tags": {"cvs": "tag3", "git": "tag4"}, "folder_name": "project2_folder"}
-project3 = {"name": "project3", "tags": {"cvs": None, "git": "tag5"}, "folder_name": "project3_folder"}
-
-checkout = CheckOutProjects(update_type, workspace_dir, log_file)
-project_list = [project1, project2, project3]
-checkout.checkout_projects(project_list)
-
-
 import os
 import subprocess
 import logging
