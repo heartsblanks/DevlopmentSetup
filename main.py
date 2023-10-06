@@ -1,50 +1,26 @@
 import tkinter as tk
 
-def is_row_empty(frame, row):
-    # Check if all columns in the given row are empty
-    for col in range(frame.columns):
-        widget = frame.grid_slaves(row=row, column=col)
-        if widget:
-            return False
-    return True
-
-def insert_label(frame, row):
-    # Insert a label with text in all columns of the given row
-    label = tk.Label(frame, text="Empty Row")
-    label.grid(row=row, column=0, columnspan=frame.columns)
-
-def get_existing_rows(frame):
-    # Determine the number of rows with labels
-    existing_rows = 0
-    for row in range(frame.rows):
-        if not is_row_empty(frame, row):
-            existing_rows += 1
-    return existing_rows
-
-def add_row():
-    existing_rows = get_existing_rows(frame)
-    new_row = existing_rows
-    frame.rows += 1
-
-    # Check if the new row should have a label
-    if is_row_empty(frame, new_row):
-        insert_label(frame, new_row)
-
 root = tk.Tk()
-root.title("Dynamic Rows")
+root.title("Buttons in Frames")
 
-frame = tk.Frame(root)
-frame.grid(row=0, column=0)
+# Create the left frame
+left_frame = tk.Frame(root, width=200, height=300, bg="lightblue")
+left_frame.grid(row=0, column=0, padx=10, pady=10)
 
-frame.columns = 10  # Number of columns
-frame.rows = 0  # Initialize the number of rows
+# Create the right frame
+right_frame = tk.Frame(root, width=200, height=300, bg="lightgreen")
+right_frame.grid(row=0, column=1, padx=10, pady=10)
 
-# Create and insert some initial labels (for demonstration)
-insert_label(frame, frame.rows)
-frame.rows += 1
+# Add buttons to the left frame in a grid
+for i in range(3):
+    for j in range(3):
+        button = tk.Button(left_frame, text=f"Button {i*3+j+1}")
+        button.grid(row=i, column=j, padx=5, pady=5)
 
-# Create a button to add a new row
-add_button = tk.Button(root, text="Add Row", command=add_row)
-add_button.grid(row=1, column=0, pady=10)
+# Add buttons to the right frame in a grid
+for i in range(3):
+    for j in range(3):
+        button = tk.Button(right_frame, text=f"Button {i*3+j+4}")
+        button.grid(row=i, column=j, padx=5, pady=5)
 
 root.mainloop()
