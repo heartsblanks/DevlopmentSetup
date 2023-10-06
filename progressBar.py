@@ -16,8 +16,11 @@ class ProgressBar:
         self.progress = ttk.Progressbar(frame, orient="horizontal", length=350, mode="indeterminate")
         self.progress.grid(row=row + 1, column=column, pady=5)
 
-    def update(self, new_message):
-        self.label.config(text=new_message)
+    def start(self):
+        self.progress.start()
+
+    def stop(self):
+        self.progress.stop()
 
 def process_data(progress_bar):
     # Perform time-consuming tasks here
@@ -32,11 +35,18 @@ def start_processing():
 
     progress = ProgressBar(frame, message="Processing Data", row=0, column=0)  # Specify row and column
 
+    # Start the progress bar
+    progress.start()
+
     # Create a thread for the task
     thread = threading.Thread(target=process_data, args=(progress,))
 
     # Start the thread
     thread.start()
+
+    # You can stop the progress bar when the task is completed (optional)
+    thread.join()
+    progress.stop()
 
 # Create the master window
 master = tk.Tk()
