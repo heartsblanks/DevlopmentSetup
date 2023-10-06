@@ -1,26 +1,26 @@
 import tkinter as tk
+from tkinter import ttk
+
+def complete_progress():
+    progress_bar.stop()  # Stop the progress bar
+    progress_bar["value"] = 100  # Set progress to 100%
+    progress_bar["style"] = "red.Horizontal.TProgressbar"  # Change the color to red
 
 root = tk.Tk()
-root.title("Buttons in Frames")
+root.title("Determinate Progress Bar")
 
-# Create the left frame
-left_frame = tk.Frame(root, width=200, height=300, bg="lightblue")
-left_frame.grid(row=0, column=0, padx=10, pady=10)
+# Create a custom style with a red color for the progress bar
+s = ttk.Style()
+s.configure("red.Horizontal.TProgressbar", foreground="red", background="red")
 
-# Create the right frame
-right_frame = tk.Frame(root, width=200, height=300, bg="lightgreen")
-right_frame.grid(row=0, column=1, padx=10, pady=10)
+# Create the determinate progress bar
+progress_bar = ttk.Progressbar(root, orient="horizontal", length=300, mode="determinate", maximum=100, style="red.Horizontal.TProgressbar")
+progress_bar.pack(pady=20)
 
-# Add buttons to the left frame in a grid
-for i in range(3):
-    for j in range(3):
-        button = tk.Button(left_frame, text=f"Button {i*3+j+1}")
-        button.grid(row=i, column=j, padx=5, pady=5)
+start_button = tk.Button(root, text="Start Progress", command=lambda: progress_bar.start(10))
+start_button.pack()
 
-# Add buttons to the right frame in a grid
-for i in range(3):
-    for j in range(3):
-        button = tk.Button(right_frame, text=f"Button {i*3+j+4}")
-        button.grid(row=i, column=j, padx=5, pady=5)
+complete_button = tk.Button(root, text="Complete Progress", command=complete_progress)
+complete_button.pack()
 
 root.mainloop()
