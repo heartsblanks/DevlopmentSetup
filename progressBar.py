@@ -22,11 +22,14 @@ class ProgressBar:
     def stop(self):
         self.progress.stop()
 
+    def set_message(self, new_message):
+        self.label.config(text=new_message)
+
 def process_data(progress_bar):
     # Perform time-consuming tasks here
     for i in range(10):
         new_message = f"Processing Step {i+1}"
-        progress_bar.update(new_message)
+        progress_bar.set_message(new_message)
         time.sleep(1)
 
 def start_processing():
