@@ -132,6 +132,96 @@ Requirement	Description
 ✅ ITX Projects	POM in root, project structure self-contained
 
 
+⸻Great — here is the next section of your Developer Guide, covering what happens after development is complete and the proper flow to promote code to the TEST and UAT environments. It’s structured for easy inclusion in your documentation.
+
 ⸻
 
-Would you like this as a downloadable markdown file or want to expand it with examples (e.g., sample pom.xml or Jenkinsfile)?
+🚀 Post-Development Workflow – Moving Code to TEST & UAT
+
+Once development is complete, follow these steps to push changes, run builds, initiate code review, and promote to higher environments.
+
+⸻
+
+✅ Step 1: Commit & Push Your Changes
+	1.	Commit your changes locally with meaningful messages:
+
+git add .
+git commit -m "Implemented feature X - refactored Y"
+
+You can commit multiple times to track your progress clearly.
+
+	2.	Push to your feature branch:
+
+git push origin feature/your-feature-name
+
+
+	3.	This push will trigger the Jenkins pipeline automatically.
+	•	Jenkins will validate, build, and deploy the current snapshot to the TEST environment.
+	•	You can track the Jenkins job in your build dashboard.
+
+⸻
+
+🔁 Step 2: Create a Pull Request (PR) for UAT Readiness
+
+Once development is done and testing on TEST is successful:
+	1.	Go to your GitHub repository and click “New Pull Request”.
+	2.	Base branch should be main; compare branch should be your feature branch.
+	3.	Title of the PR must be the Jira task only, e.g.:
+
+JIRA-1234
+
+
+	4.	Creating the pull request will:
+	•	Trigger another Jenkins build.
+	•	Validate, build, and deploy the code to UAT.
+	•	Prepare the code for source review.
+
+📎 How to create a pull request: GitHub PR Docs
+
+🚫 Do not proceed to review if the Jenkins build fails. The code must pass CI checks before it is reviewed or merged.
+
+⸻
+
+🔍 Step 3: Source Code Review
+
+Once the PR build is successful:
+	1.	Assign a reviewer.
+	2.	Reviewers should verify:
+	•	Code quality
+	•	Compliance with standards
+	•	Test coverage
+	3.	Upon approval, you’re cleared to merge.
+
+📎 How to review code on GitHub: GitHub Review Docs
+
+⸻
+
+🔀 Merging Code to Main (UAT Deployment)
+
+⚠️ Only merge when the UAT environment is ready to receive the update.
+
+	1.	Merge the pull request into the main branch from GitHub.
+	2.	After merging:
+	•	The feature branch can be deleted safely.
+	•	GitHub UI usually prompts you to delete it.
+
+📎 How to merge code on GitHub: GitHub Merging Docs
+
+⸻
+
+🚢 Automated Actions on Merge
+
+Merging to main will trigger:
+	•	Final Jenkins pipeline execution
+	•	Creation of a release version (removal of -SNAPSHOT)
+	•	Git tag creation with the release version
+	•	Deployment to UAT environment
+	•	Upload of release package to Nexus Production repository
+
+📦 Nexus Prod Repo URL (replace with actual link):
+https://nexus.company.com/repository/eai-releases/
+
+⸻
+
+
+
