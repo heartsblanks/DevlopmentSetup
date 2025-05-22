@@ -1,0 +1,137 @@
+Here’s a draft Developer Guide for your team’s GitHub repository structure and development practices, based on your requirements. I’ve structured it cleanly so it can be turned into a markdown document (README.md or DEVELOPER_GUIDE.md) and version-controlled in your repository.
+
+⸻
+
+📘 Developer Guide – GitHub Repository Standards for EAI Projects
+
+📁 Repository Structure
+
+Each repository should follow a standardized modular structure based on the type of project.
+
+For PAP Repositories
+
+The repository must contain:
+	•	A Base POM (pom.xml) at the root level – serves as the central point for shared configurations.
+	•	Multiple sub-modules, each representing a specific project within the repository.
+
+Sub-module Types
+	•	ace-application – ACE flows and integration logic
+	•	java-project – Java-based components or microservices
+	•	message-set-project – IBM Integration Bus (IIB) message sets
+	•	library-project – Shared utility libraries
+	•	database-project – DB scripts and configurations
+	•	testcase-project – Unit, integration, and regression test cases
+
+🔁 All project modules must have their own individual POMs and be declared as modules in the base POM.
+
+For ITX Repositories
+	•	The repository itself is the project.
+	•	It contains a single POM file with a parent pointing to a custom parent POM.
+
+⸻
+
+⚙️ POM File Structure
+
+Base POM (Root pom.xml)
+	•	Must have this as the parent:
+
+<parent>
+  <groupId>com.org.eai</groupId>
+  <artifactId>EAI-parent-pom</artifactId>
+  <version>latest</version> <!-- Replace with actual latest version -->
+</parent>
+
+
+	•	Declare all submodules under the <modules> tag.
+
+Submodule POM (e.g., ace-application/pom.xml)
+	•	Must inherit from a project-specific parent POM, depending on the type:
+	•	ACE → ace-parent-pom
+	•	Java → java-parent-pom
+	•	etc.
+
+Example:
+
+<parent>
+  <groupId>com.org.eai</groupId>
+  <artifactId>ace-parent-pom</artifactId>
+  <version>latest</version>
+</parent>
+
+Dependencies
+	•	Common dependencies (e.g., logging, testing, spring) are managed via the parent POM.
+	•	To add a new dependency:
+	•	Ensure it’s not already covered by the parent.
+	•	Use the latest stable version.
+
+⸻
+
+🔍 Dependency & Parent POM Version Management
+
+Check the latest version of a dependency:
+
+mvn versions:display-dependency-updates
+
+Check the latest version of the parent POM:
+
+mvn versions:display-plugin-updates
+
+📌 Refer to the EAI Parent POM repository for version history and dependency coverage.
+
+⸻
+
+🔄 Versioning Strategy
+
+Versioning is crucial for build and deployment integrity.
+
+General Rules
+	•	Keep all POMs in sync with the same version.
+	•	Versions should always be -SNAPSHOT during development.
+	•	Do not manually create release versions (x.y.z). These are generated automatically during the UAT or Prod deployment pipeline.
+
+When to Update Versions
+
+Scenario	Version Action
+Fix	No change needed (continue using current x.y-SNAPSHOT)
+Feature or Release	Bump to new major/minor x+1.0-SNAPSHOT or x.y+1-SNAPSHOT
+
+Example: If current version is 1.1-SNAPSHOT, and you’re developing a major feature, bump it to 2.0-SNAPSHOT.
+
+⸻
+
+🌿 Branching Strategy
+	•	Start by creating a new branch from main.
+	•	main will always reflect the latest snapshot version.
+	•	All development branches should work against that snapshot.
+
+git checkout -b feature/your-feature-name main
+
+
+⸻
+
+🧪 CI/CD – Jenkins Integration
+	•	Every repository must contain a Jenkinsfile at the root.
+	•	The pipeline will:
+	•	Build all modules
+	•	Run tests
+	•	Validate POM versions
+	•	Package artifacts
+	•	Deploy to artifact repository if release is triggered
+
+⸻
+
+📌 Summary Checklist
+
+Requirement	Description
+✅ Base POM	Exists with EAI-parent-pom
+✅ Module POMs	Exist for all subprojects with correct parent
+✅ Jenkinsfile	Present in root
+✅ Versioning	Synced across all POMs, using -SNAPSHOT
+✅ Dependencies	Latest versions, not redundant with parent
+✅ Branching	From main, follow versioning rules
+✅ ITX Projects	POM in root, project structure self-contained
+
+
+⸻
+
+Would you like this as a downloadable markdown file or want to expand it with examples (e.g., sample pom.xml or Jenkinsfile)?
