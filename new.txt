@@ -221,7 +221,56 @@ Merging to main will trigger:
 📦 Nexus Prod Repo URL (replace with actual link):
 https://nexus.company.com/repository/eai-releases/
 
+Here’s a concise yet clear section you can include in your developer guide explaining the purpose of the Jenkinsfile, the pipeline setup, and parameter usage:
+
 ⸻
+
+🛠️ Jenkinsfile – Purpose and Usage
+
+Every repository must include a Jenkinsfile at the root. This file defines the CI/CD pipeline used by Jenkins to automate:
+	•	Build validation
+	•	Code quality checks
+	•	Unit and integration testing
+	•	Artifact packaging
+	•	Deployment to TEST, UAT, and Production environments
+	•	Versioning and tagging of releases
+
+🔗 Jenkins Pipeline Library
+
+The Jenkinsfile uses a shared scripted pipeline library managed centrally for all EAI projects. This library contains reusable pipeline logic that ensures consistency across builds and reduces the need to rewrite logic for each project.
+
+📦 Shared library is typically configured in Jenkins globally under shared_lib.
+
+⸻
+
+🧩 Pipeline Parameters
+
+Your Jenkinsfile must define specific parameters to pass metadata and control execution logic. Below are key parameters and guidelines:
+
+Parameter	Type	Required	Description
+pap	String	✅ Yes	Mandatory. Represents the name of the PAP project (base repository name).
+ace, java, msgset, library, db, testcase	String or List<String>	Optional	Pass the module names as a string or list (for multiple projects of the same type).
+shared_lib	List<String>	Optional	For repositories without any properties override, pass as an empty list: shared_lib: [].
+
+Example usage in Jenkinsfile:
+
+eai_pipeline(
+  pap: 'my-pap-project',
+  ace: ['flow1', 'flow2'],
+  java: 'my-java-service',
+  shared_lib: []
+)
+
+📝 Notes
+	•	If a specific project type (e.g., msgset, db, etc.) is not applicable, simply omit the parameter.
+	•	Always ensure pap is passed – it’s used for environment-specific settings, versioning, and tagging.
+	•	For repositories with no overrides or properties, shared_lib must still be declared as an empty list.
+
+⸻
+
+
+
+
 
 
 
